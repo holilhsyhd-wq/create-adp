@@ -1,72 +1,81 @@
-// api/create-admin.js
+// api/createAdmin.js
+
+async function safeJson(resp) {
+  try {
+    return await resp.json();
+  } catch {
+    try {
+      const text = await resp.text();
+      return { raw: text };
+    } catch {
+      return {};
+    }
+  }
+}
 
 export default async function handler(req, res) {
-  if (req.method !== "POST") {
-    return res.status(405).json({ error: "Method not allowed" });
+  if (req.method !== 'POST') {
+    return res.status(405).json({ error: 'Method not allowed' });
   }
 
   try {
-    const body = typeof req.body === "string" ? JSON.parse(req.body) : req.body;
-    const { adminUsername, secretKey } = body || {};
+    const body = typeof req.body === 'string' ? JSON.parse(req.body) : req.body;
 
-    if (!adminUsername || !secretKey) {
-      return res.status(400).json({ error: "Data tidak lengkap." });
+    const {
+      adminUsername,
+      adminPassword,
+      adminSecret,
+    } = body || {};
+
+    if (!adminUsername || !adminPassword || !adminSecret) {
+      return res.status(400).json({ error: 'Data form tidak lengkap.' });
     }
 
-    // cek secret key khusus admin
-    if (secretKey !== process.env.ZEROIX_ADMIN_SECRET) {
-      return res.status(401).json({ error: "Secret key admin salah / tidak valid." });
+    // Validasi secret key ADMIN
+    const expectedSecret =
+      process.env.ZEROIX_ADMIN_SECRET || 'barmods22';
+
+    if (adminSecret !== expectedSecret) {
+      return res.status(401).json({ error: 'Secret key admin salah.' });
     }
 
-    // env pterodactyl
     const panelUrl = process.env.PTERO_PANEL_URL;
     const apiUrl = process.env.PTERO_API_URL;
     const apiKey = process.env.PTERO_API_KEY;
 
     if (!panelUrl || !apiUrl || !apiKey) {
       return res.status(500).json({
-        error: "Konfigurasi panel belum lengkap. Cek Environment Variables di Vercel.",
+        error: 'Konfigurasi Pterodactyl belum lengkap di environment variables.',
       });
     }
 
-    const generatePassword = (length = 14) => {
-      const chars =
-        "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*";
-      let pass = "";
-      for (let i = 0; i < length; i++) {
-        pass += chars.charAt(Math.floor(Math.random() * chars.length));
-      }
-      return pass;
-    };
-
-    const password = generatePassword(14);
-    const safeUsername = adminUsername.replace(/[^a-zA-Z0-9_.-]/g, "_").toLowerCase();
     const timestamp = Date.now();
-    const email = `admin_${safeUsername}_${timestamp}@zeroix.local`;
+    const email = `${adminUsername}_${timestamp}@zeroix.local`;
 
-    // create user admin (root_admin: true)
     const userResp = await fetch(`${apiUrl}/api/application/users`, {
-      method: "POST",
+      method: 'POST',
       headers: {
-        "Content-Type": "application/json",
+        'Content-Type': 'application/json',
         Authorization: `Bearer ${apiKey}`,
-        Accept: "application/json",
+        Accept: 'application/json',
       },
       body: JSON.stringify({
-        username: safeUsername,
+        username: adminUsername,
         email,
-        first_name: "Zeroix",
-        last_name: "Admin",
-        password,
-        language: "en",
+        first_name: 'Zeroix',
+        last_name: 'Admin',
+        password: adminPassword,
+        language: 'en',
         root_admin: true,
       }),
     });
 
     if (!userResp.ok) {
-      const err = await safeJson(userResp);
-      console.error("Error create admin:", err);
-      throw new Error(`Gagal membuat admin di panel (status ${userResp.status}).`);
+      const errBody = await safeJson(userResp);
+      console.error('Create admin error:', errBody);
+      return res.status(500).json({
+        error: `Gagal membuat admin (status ${userResp.status}).`,
+      });
     }
 
     const userData = await userResp.json();
@@ -78,19 +87,12 @@ export default async function handler(req, res) {
         username: user.username,
         email: user.email,
       },
-      password,
-      isAdmin: true,
+      password: adminPassword,
     });
   } catch (err) {
-    console.error("Internal Error (create-admin):", err);
-    return res.status(500).json({ error: err.message || "Terjadi kesalahan di server." });
-  }
-}
-
-async function safeJson(resp) {
-  try {
-    return await resp.json();
-  } catch {
-    return { raw: await resp.text() };
+    console.error('Internal error (createAdmin):', err);
+    return res.status(500).json({
+      error: err.message || 'Terjadi kesalahan di server.',
+    });
   }
 }
