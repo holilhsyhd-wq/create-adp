@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <title>Zeroix Dashboard</title>
+  <link rel="stylesheet" href="./public/style.css" />
+</head>
+<body>
+
+<div class="nav">
+  <h1>Zeroix Dashboard</h1>
+  <span id="clock">00:00:00</span>
+</div>
+
+<div class="container">
+
+  <!-- CREATE PANEL -->
+  <div class="card">
+    <h2>Create Panel</h2>
+
+    <label>Username Panel</label>
+    <input id="usernamePanel" placeholder="username panel" />
+
+    <label>Pilih RAM</label>
+    <select id="ram">
+      <option value="1024">1 GB</option>
+      <option value="2048">2 GB</option>
+      <option value="3072">3 GB</option>
+      <option value="4096">4 GB</option>
+      <option value="5120">5 GB</option>
+      <option value="6144">6 GB</option>
+      <option value="7168">7 GB</option>
+      <option value="8192">8 GB</option>
+      <option value="9216">9 GB</option>
+      <option value="unlimited">Unlimited</option>
+    </select>
+
+    <label>Secret Key Panel</label>
+    <input type="password" id="keyPanel" placeholder="secret panel" />
+
+    <button onclick="createPanel()">Buat Panel</button>
+
+    <div id="resultPanel" class="result"></div>
+  </div>
+
+
+  <!-- CREATE ADMIN -->
+  <div class="card">
+    <h2>Create Admin</h2>
+
+    <label>Username Admin</label>
+    <input id="usernameAdmin" placeholder="username admin" />
+
+    <label>Password Admin</label>
+    <input type="password" id="passwordAdmin" placeholder="password admin" />
+
+    <label>Secret Key Admin</label>
+    <input type="password" id="keyAdmin" placeholder="secret admin" />
+
+    <button onclick="createAdmin()">Buat Admin</button>
+
+    <div id="resultAdmin" class="result"></div>
+  </div>
+
+</div>
+
+<script src="./public/script.js"></script>
+</body>
+</html>
