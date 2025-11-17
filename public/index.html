@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Zeroix Pterodactyl Dashboard</title>
+  <title>Zeroix Dashboard - Pterodactyl Manager</title>
 
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -13,142 +13,172 @@
   />
   <link
     rel="stylesheet"
-    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
   />
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <!-- background -->
-  <div class="stars"></div>
-  <div class="twinkling"></div>
+  <div class="bg-gradient"></div>
+  <div class="bg-blur-circle bg-blur-1"></div>
+  <div class="bg-blur-circle bg-blur-2"></div>
 
-  <!-- clock -->
-  <div id="realtime-clock">
-    <span class="clock-label"><i class="far fa-clock"></i> REALTIME</span>
-    <span id="clock-time">00:00:00</span>
-  </div>
-
-  <main class="page">
-    <header class="page-header">
-      <div>
-        <h1>ZEROIX PTERODACTYL</h1>
-        <p>Dashboard untuk create Panel User & Admin Panel secara otomatis.</p>
+  <header class="topbar">
+    <div class="topbar-left">
+      <div class="logo-circle">
+        <i class="fa-solid fa-dragon"></i>
       </div>
-      <div class="badge">TEAM ZEROIX</div>
-    </header>
+      <div class="brand-text">
+        <h1>Zeroix Dashboard</h1>
+        <p>Pterodactyl Panel & Admin Creator</p>
+      </div>
+    </div>
+    <div class="topbar-right">
+      <div class="clock-wrapper">
+        <i class="fa-regular fa-clock"></i>
+        <span id="clock-time">00:00:00</span>
+      </div>
+    </div>
+  </header>
 
-    <section class="cards">
-      <!-- CARD: CREATE PANEL USER + SERVER -->
-      <article class="card">
-        <h2><i class="fas fa-user-plus"></i> Create Panel + Server</h2>
-        <p class="card-desc">
-          Membuat akun panel <strong>user biasa</strong> sekaligus 1 server baru.
+  <main class="main-layout">
+    <!-- CARD: CREATE PANEL -->
+    <section class="card">
+      <div class="card-header">
+        <div class="card-title-group">
+          <h2><i class="fa-solid fa-user-plus"></i> Create Panel User</h2>
+          <span class="badge badge-panel">PANEL</span>
+        </div>
+        <p class="card-subtitle">
+          Buat akun panel + server dengan batas RAM yang kamu tentukan.
         </p>
+      </div>
 
-        <form id="panelForm" class="form">
-          <div class="field-group">
-            <label for="panelUsername">Username Panel</label>
-            <input
-              type="text"
-              id="panelUsername"
-              name="panelUsername"
-              placeholder="contoh: zeroix_user01"
-              required
-            />
-          </div>
+      <form id="panelForm" class="form-grid">
+        <div class="form-group">
+          <label for="panelUsername">Username Panel</label>
+          <input
+            type="text"
+            id="panelUsername"
+            name="panelUsername"
+            placeholder="contoh: zeroix_user"
+            required
+          />
+        </div>
 
-          <div class="field-group">
-            <label for="serverName">Nama Server</label>
-            <input
-              type="text"
-              id="serverName"
-              name="serverName"
-              placeholder="contoh: Bot-Discord-01"
-              required
-            />
-          </div>
+        <div class="form-group">
+          <label for="panelPassword">Password Panel</label>
+          <input
+            type="password"
+            id="panelPassword"
+            name="panelPassword"
+            placeholder="Minimal 8 karakter"
+            required
+          />
+        </div>
 
-          <div class="field-group">
-            <label for="ram">Pilih RAM</label>
-            <select id="ram" name="ram" required>
-              <option value="" disabled selected>-- Pilih RAM --</option>
-              <option value="1024">1 GB</option>
-              <option value="2048">2 GB</option>
-              <option value="3072">3 GB</option>
-              <option value="4096">4 GB</option>
-              <option value="5120">5 GB</option>
-              <option value="6144">6 GB</option>
-              <option value="7168">7 GB</option>
-              <option value="8192">8 GB</option>
-              <option value="9216">9 GB</option>
-              <option value="0">Unlimited</option>
-            </select>
-          </div>
+        <div class="form-group">
+          <label for="panelRam">Pilih RAM (GB)</label>
+          <select id="panelRam" name="panelRam" required>
+            <option value="" disabled selected>-- Pilih RAM --</option>
+            <option value="1024">1 GB</option>
+            <option value="2048">2 GB</option>
+            <option value="3072">3 GB</option>
+            <option value="4096">4 GB</option>
+            <option value="5120">5 GB</option>
+            <option value="6144">6 GB</option>
+            <option value="7168">7 GB</option>
+            <option value="8192">8 GB</option>
+            <option value="9216">9 GB</option>
+            <option value="0">Unlimited</option>
+          </select>
+        </div>
 
-          <div class="field-group">
-            <label for="panelSecret">Secret Key (Member Zeroix)</label>
-            <input
-              type="password"
-              id="panelSecret"
-              name="panelSecret"
-              placeholder="secret create panel"
-              required
-            />
-            <small>Gunakan key khusus panel (bukan admin).</small>
-          </div>
+        <div class="form-group">
+          <label for="panelSecret">Secret Key Panel</label>
+          <input
+            type="password"
+            id="panelSecret"
+            name="panelSecret"
+            placeholder="secret create panel"
+            required
+          />
+          <small class="muted">
+            Khusus member Zeroix. (default: <code>barmods21</code>)
+          </small>
+        </div>
 
-          <button type="submit" id="panelSubmit">
-            <span>Buat Panel + Server</span>
-            <i class="fas fa-rocket"></i>
-          </button>
-        </form>
+        <button type="submit" id="panelSubmit" class="btn-primary">
+          <span class="btn-text">Buat Panel</span>
+          <span class="btn-loader">
+            <i class="fa-solid fa-circle-notch fa-spin"></i>
+          </span>
+        </button>
+      </form>
 
-        <div id="panelResult" class="result-box"></div>
-      </article>
+      <div id="panelResult" class="result-box"></div>
+    </section>
 
-      <!-- CARD: CREATE ADMIN PANEL (ROOT ADMIN) -->
-      <article class="card">
-        <h2><i class="fas fa-user-shield"></i> Create Admin Panel</h2>
-        <p class="card-desc">
-          Membuat akun <strong>Admin Panel</strong> (root_admin) tanpa server.
+    <!-- CARD: CREATE ADMIN -->
+    <section class="card">
+      <div class="card-header">
+        <div class="card-title-group">
+          <h2><i class="fa-solid fa-user-shield"></i> Create Admin</h2>
+          <span class="badge badge-admin">ADMIN</span>
+        </div>
+        <p class="card-subtitle">
+          Buat akun admin (root admin) Pterodactyl tanpa server & RAM.
         </p>
+      </div>
 
-        <form id="adminForm" class="form">
-          <div class="field-group">
-            <label for="adminUsername">Username Admin</label>
-            <input
-              type="text"
-              id="adminUsername"
-              name="adminUsername"
-              placeholder="contoh: zeroix_admin01"
-              required
-            />
-          </div>
+      <form id="adminForm" class="form-grid">
+        <div class="form-group">
+          <label for="adminUsername">Username Admin</label>
+          <input
+            type="text"
+            id="adminUsername"
+            name="adminUsername"
+            placeholder="contoh: zeroix_admin"
+            required
+          />
+        </div>
 
-          <div class="field-group">
-            <label for="adminSecret">Secret Key Admin</label>
-            <input
-              type="password"
-              id="adminSecret"
-              name="adminSecret"
-              placeholder="secret create admin"
-              required
-            />
-            <small>Gunakan key khusus admin.</small>
-          </div>
+        <div class="form-group">
+          <label for="adminPassword">Password Admin</label>
+          <input
+            type="password"
+            id="adminPassword"
+            name="adminPassword"
+            placeholder="Minimal 8 karakter"
+            required
+          />
+        </div>
 
-          <button type="submit" id="adminSubmit" class="btn-admin">
-            <span>Buat Admin Panel</span>
-            <i class="fas fa-crown"></i>
-          </button>
-        </form>
+        <div class="form-group">
+          <label for="adminSecret">Secret Key Admin</label>
+          <input
+            type="password"
+            id="adminSecret"
+            name="adminSecret"
+            placeholder="secret create admin"
+            required
+          />
+          <small class="muted">
+            Khusus owner / staff. (default: <code>barmods22</code>)
+          </small>
+        </div>
 
-        <div id="adminResult" class="result-box"></div>
-      </article>
+        <button type="submit" id="adminSubmit" class="btn-secondary">
+          <span class="btn-text">Buat Admin</span>
+          <span class="btn-loader">
+            <i class="fa-solid fa-circle-notch fa-spin"></i>
+          </span>
+        </button>
+      </form>
+
+      <div id="adminResult" class="result-box"></div>
     </section>
   </main>
 
-  <!-- WhatsApp FAB -->
   <a
     href="https://wa.me/6283877842721"
     class="whatsapp-fab"
@@ -158,127 +188,121 @@
     <i class="fab fa-whatsapp"></i>
   </a>
 
+  <footer class="footer">
+    <span>Made with ❤️ by Team Zeroix</span>
+  </footer>
+
   <script>
-    // realtime clock
+    // JAM REALTIME
     function updateClock() {
-      const el = document.getElementById("clock-time");
+      const el = document.getElementById('clock-time');
       if (!el) return;
       const now = new Date();
-      const h = String(now.getHours()).padStart(2, "0");
-      const m = String(now.getMinutes()).padStart(2, "0");
-      const s = String(now.getSeconds()).padStart(2, "0");
-      el.textContent = h + ":" + m + ":" + s;
+      const h = String(now.getHours()).padStart(2, '0');
+      const m = String(now.getMinutes()).padStart(2, '0');
+      const s = String(now.getSeconds()).padStart(2, '0');
+      el.textContent = h + ':' + m + ':' + s;
     }
     setInterval(updateClock, 1000);
     updateClock();
 
-    // helper untuk handle response
-    async function handleJsonResponse(response) {
-      const data = await response.json();
-      if (!response.ok) {
-        throw new Error(data.error || "Terjadi kesalahan.");
-      }
-      return data;
+    // Helper submit handler
+    async function handleFormSubmit(options) {
+      const {
+        formId,
+        endpoint,
+        buttonId,
+        resultId,
+      } = options;
+
+      const form = document.getElementById(formId);
+      const btn = document.getElementById(buttonId);
+      const resultBox = document.getElementById(resultId);
+
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        resultBox.className = 'result-box info';
+        resultBox.innerText = '⏳ Sedang memproses...';
+
+        btn.disabled = true;
+        btn.classList.add('loading');
+
+        try {
+          const formData = new FormData(form);
+          const payload = {};
+          formData.forEach((v, k) => (payload[k] = v));
+
+          const resp = await fetch(endpoint, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload),
+          });
+
+          const data = await resp.json().catch(() => ({}));
+
+          if (!resp.ok) {
+            throw new Error(data.error || 'Terjadi kesalahan.');
+          }
+
+          if (endpoint === '/api/createPanel') {
+            // RESPONSE UNTUK CREATE PANEL
+            resultBox.className = 'result-box success';
+            resultBox.innerHTML = `
+              <h4>✅ Panel Berhasil Dibuat</h4>
+              <p><strong>URL Panel:</strong> ${data.panelURL}</p>
+              <hr>
+              <p><strong>Username:</strong> ${data.user.username}</p>
+              <p><strong>Email:</strong> ${data.user.email}</p>
+              <p><strong>Password:</strong> ${data.password}</p>
+              ${
+                data.server
+                  ? `
+              <hr>
+              <p><strong>Server:</strong> ${data.server.name}</p>
+              <p><strong>RAM:</strong> ${data.server.limits.memory} MB</p>`
+                  : ''
+              }
+            `;
+          } else {
+            // RESPONSE UNTUK CREATE ADMIN
+            resultBox.className = 'result-box success';
+            resultBox.innerHTML = `
+              <h4>🛡️ Admin Berhasil Dibuat</h4>
+              <p><strong>URL Panel:</strong> ${data.panelURL}</p>
+              <hr>
+              <p><strong>Username:</strong> ${data.user.username}</p>
+              <p><strong>Email:</strong> ${data.user.email}</p>
+              <p><strong>Password:</strong> ${data.password}</p>
+              <p class="muted" style="margin-top:6px;">
+                Login dan pastikan role <strong>root admin</strong> aktif di panel.
+              </p>
+            `;
+          }
+
+          form.reset();
+        } catch (err) {
+          resultBox.className = 'result-box error';
+          resultBox.innerText = '❌ Gagal: ' + err.message;
+        } finally {
+          btn.disabled = false;
+          btn.classList.remove('loading');
+        }
+      });
     }
 
-    // FORM: CREATE PANEL + SERVER
-    document
-      .getElementById("panelForm")
-      .addEventListener("submit", async function (e) {
-        e.preventDefault();
-        const form = e.target;
-        const resultBox = document.getElementById("panelResult");
-        const submitBtn = document.getElementById("panelSubmit");
+    handleFormSubmit({
+      formId: 'panelForm',
+      endpoint: '/api/createPanel',
+      buttonId: 'panelSubmit',
+      resultId: 'panelResult',
+    });
 
-        const panelUsername = form.panelUsername.value.trim();
-        const serverName = form.serverName.value.trim();
-        const ram = form.ram.value;
-        const secretKey = form.panelSecret.value;
-
-        resultBox.className = "result-box info";
-        resultBox.textContent = "⏳ Sedang memproses create panel + server...";
-        submitBtn.disabled = true;
-
-        try {
-          const resp = await fetch("/api/create-panel", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              panelUsername,
-              serverName,
-              ram,
-              secretKey,
-            }),
-          });
-
-          const data = await handleJsonResponse(resp);
-
-          resultBox.className = "result-box success";
-          resultBox.innerHTML = `
-            <h4>✅ Panel & Server Berhasil Dibuat</h4>
-            <p><strong>URL Panel:</strong> ${data.panelURL}</p>
-            <hr>
-            <p><strong>Username:</strong> ${data.user.username}</p>
-            <p><strong>Email:</strong> ${data.user.email}</p>
-            <p><strong>Password:</strong> ${data.password}</p>
-            <hr>
-            <p><strong>Nama Server:</strong> ${data.server.name}</p>
-            <p><strong>RAM:</strong> ${data.server.limits.memory} MB</p>
-          `;
-
-          form.reset();
-          form.ram.value = "";
-        } catch (err) {
-          resultBox.className = "result-box error";
-          resultBox.textContent = "❌ Gagal: " + err.message;
-        } finally {
-          submitBtn.disabled = false;
-        }
-      });
-
-    // FORM: CREATE ADMIN PANEL
-    document
-      .getElementById("adminForm")
-      .addEventListener("submit", async function (e) {
-        e.preventDefault();
-        const form = e.target;
-        const resultBox = document.getElementById("adminResult");
-        const submitBtn = document.getElementById("adminSubmit");
-
-        const adminUsername = form.adminUsername.value.trim();
-        const secretKey = form.adminSecret.value;
-
-        resultBox.className = "result-box info";
-        resultBox.textContent = "⏳ Sedang memproses create admin panel...";
-        submitBtn.disabled = true;
-
-        try {
-          const resp = await fetch("/api/create-admin", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ adminUsername, secretKey }),
-          });
-
-          const data = await handleJsonResponse(resp);
-
-          resultBox.className = "result-box success";
-          resultBox.innerHTML = `
-            <h4>👑 Admin Panel Berhasil Dibuat</h4>
-            <p><strong>URL Panel:</strong> ${data.panelURL}</p>
-            <hr>
-            <p><strong>Username Admin:</strong> ${data.user.username}</p>
-            <p><strong>Email:</strong> ${data.user.email}</p>
-            <p><strong>Password:</strong> ${data.password}</p>
-          `;
-
-          form.reset();
-        } catch (err) {
-          resultBox.className = "result-box error";
-          resultBox.textContent = "❌ Gagal: " + err.message;
-        } finally {
-          submitBtn.disabled = false;
-        }
-      });
+    handleFormSubmit({
+      formId: 'adminForm',
+      endpoint: '/api/createAdmin',
+      buttonId: 'adminSubmit',
+      resultId: 'adminResult',
+    });
   </script>
 </body>
 </html>
