@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Zeroix Panel Creator</title>
+    <title>Zeroix Dashboard</title>
 
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/style.css">
@@ -11,69 +11,93 @@
 
 <body>
 
-    <!-- Realtime Clock -->
-    <div id="clock-container">
-        <span id="clock">00:00:00</span>
+    <!-- SIDEBAR -->
+    <div class="sidebar">
+        <h2>ZEROIX</h2>
+
+        <ul>
+            <li class="active" onclick="selectMode('panel')">Create Panel</li>
+            <li onclick="selectMode('admin')">Create Admin</li>
+        </ul>
     </div>
 
-    <div class="wrapper">
-        <h1 class="title">Zeroix Panel Creator</h1>
-        <p class="subtitle">Create Pterodactyl Panel & Admin Instantly</p>
+    <!-- MAIN CONTENT -->
+    <div class="main">
 
-        <form id="createForm" class="glass-card">
+        <div class="header">
+            <span>Dashboard</span>
+            <div id="clock"></div>
+        </div>
 
-            <label>Mode</label>
-            <div class="radio-group">
-                <label><input type="radio" name="mode" value="panel" required> Create Panel</label>
-                <label><input type="radio" name="mode" value="admin"> Create Admin</label>
-            </div>
+        <div class="content">
+            <h2 id="modeTitle">Create Panel</h2>
 
-            <label>Nama Server</label>
-            <input type="text" name="serverName" placeholder="Contoh: ZeroixApp" required>
+            <form id="createForm" class="form-box">
 
-            <label>Pilih RAM</label>
-            <select name="ram" required>
-                <option value="" disabled selected>-- Pilih Ukuran RAM --</option>
-                <option value="1024">1 GB</option>
-                <option value="2048">2 GB</option>
-                <option value="3072">3 GB</option>
-                <option value="4096">4 GB</option>
-                <option value="5120">5 GB</option>
-                <option value="6144">6 GB</option>
-                <option value="7168">7 GB</option>
-                <option value="8192">8 GB</option>
-                <option value="9216">9 GB</option>
-                <option value="0">Unlimited</option>
-            </select>
+                <input type="hidden" name="mode" id="modeInput" value="panel">
 
-            <label>Secret Key</label>
-            <input type="password" name="secretKey" placeholder="Masukkan Secret Key (panel: barmods21 / admin: barmods22)" required>
+                <label>Nama Server</label>
+                <input type="text" name="serverName" placeholder="Contoh: ZeroixApp" required>
 
-            <button id="submitBtn">Proses</button>
-        </form>
+                <label>Pilih RAM</label>
+                <select name="ram" required>
+                    <option value="" disabled selected>-- Pilih RAM --</option>
+                    <option value="1024">1 GB</option>
+                    <option value="2048">2 GB</option>
+                    <option value="3072">3 GB</option>
+                    <option value="4096">4 GB</option>
+                    <option value="5120">5 GB</option>
+                    <option value="6144">6 GB</option>
+                    <option value="7168">7 GB</option>
+                    <option value="8192">8 GB</option>
+                    <option value="9216">9 GB</option>
+                    <option value="0">Unlimited</option>
+                </select>
 
-        <div id="resultBox"></div>
+                <label>Secret Key</label>
+                <input type="password" name="secretKey" placeholder="panel: barmods21 / admin: barmods22" required>
+
+                <button id="submitBtn">Proses</button>
+            </form>
+
+            <div id="resultBox"></div>
+        </div>
     </div>
 
     <script>
-        // Clock
-        const clockElem = document.getElementById("clock");
-        function updateClock(){
+        // Realtime Clock
+        function updateClock() {
             const now = new Date();
-            clockElem.textContent =
+            document.getElementById("clock").textContent = 
                 now.toLocaleTimeString("en-GB", { hour12:false });
         }
-        setInterval(updateClock, 1000);
-        updateClock();
+        setInterval(updateClock, 1000); updateClock();
 
-        // Submit Handler
+        // Mode Toggle
+        function selectMode(mode) {
+            document.getElementById("modeInput").value = mode;
+            document.getElementById("modeTitle").textContent =
+                mode === "panel" ? "Create Panel" : "Create Admin";
+
+            // Sidebar highlight
+            document.querySelectorAll(".sidebar li").forEach(li => li.classList.remove("active"));
+            if (mode === "panel") document.querySelectorAll(".sidebar li")[0].classList.add("active");
+            else document.querySelectorAll(".sidebar li")[1].classList.add("active");
+
+            // Disable fields for admin
+            document.querySelector("input[name='serverName']").disabled = mode === "admin";
+            document.querySelector("select[name='ram']").disabled = mode === "admin";
+        }
+
+        // Submit
         const form = document.getElementById("createForm");
         const resultBox = document.getElementById("resultBox");
         const btn = document.getElementById("submitBtn");
 
-        form.addEventListener("submit", async (e)=>{
+        form.addEventListener("submit", async (e) => {
             e.preventDefault();
             btn.disabled = true;
+
             resultBox.className = "msg info";
             resultBox.innerText = "⏳ Processing...";
 
