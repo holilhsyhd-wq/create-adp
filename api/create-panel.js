@@ -21,7 +21,6 @@ export default async function handler(req, res) {
     const email = `user_${Date.now()}@zeroix.local`;
     const password = generatePassword(12);
 
-    // CREATE USER
     const createUser = await fetch(`${apiURL}/api/application/users`, {
       method: "POST",
       headers: {
@@ -47,7 +46,6 @@ export default async function handler(req, res) {
 
     const user = (await createUser.json()).attributes;
 
-    // CREATE SERVER
     const createServer = await fetch(`${apiURL}/api/application/servers`, {
       method: "POST",
       headers: {
@@ -61,7 +59,7 @@ export default async function handler(req, res) {
         docker_image: process.env.PTERO_DOCKER_IMAGE,
         startup: process.env.PTERO_STARTUP,
         limits: {
-          memory: Number(ram),
+          memory: ram === "unlimited" ? 0 : Number(ram),
           swap: 0,
           disk: Number(process.env.PTERO_DEFAULT_DISK),
           io: 500,
