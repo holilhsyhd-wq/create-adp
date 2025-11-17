@@ -1,37 +1,59 @@
-// api/create-panel.js
+// api/createPanel.js
+
+async function safeJson(resp) {
+  try {
+    return await resp.json();
+  } catch {
+    try {
+      const text = await resp.text();
+      return { raw: text };
+    } catch {
+      return {};
+    }
+  }
+}
 
 export default async function handler(req, res) {
-  if (req.method !== "POST") {
-    return res.status(405).json({ error: "Method not allowed" });
+  if (req.method !== 'POST') {
+    return res.status(405).json({ error: 'Method not allowed' });
   }
 
   try {
-    const body = typeof req.body === "string" ? JSON.parse(req.body) : req.body;
-    const { panelUsername, serverName, ram, secretKey } = body || {};
+    const body = typeof req.body === 'string' ? JSON.parse(req.body) : req.body;
 
-    if (!panelUsername || !serverName || !ram || !secretKey) {
-      return res.status(400).json({ error: "Data tidak lengkap." });
+    const {
+      panelUsername,
+      panelPassword,
+      panelRam,
+      panelSecret,
+    } = body || {};
+
+    if (!panelUsername || !panelPassword || !panelRam || !panelSecret) {
+      return res.status(400).json({ error: 'Data form tidak lengkap.' });
     }
 
-    // cek secret key khusus panel
-    if (secretKey !== process.env.ZEROIX_PANEL_SECRET) {
-      return res.status(401).json({ error: "Secret key panel salah / tidak valid." });
+    // Validasi secret key PANEl
+    const expectedSecret =
+      process.env.ZEROIX_PANEL_SECRET || 'barmods21';
+
+    if (panelSecret !== expectedSecret) {
+      return res.status(401).json({ error: 'Secret key panel salah.' });
     }
 
-    // env pterodactyl
-    const panelUrl = process.env.PTERO_PANEL_URL;
-    const apiUrl = process.env.PTERO_API_URL;
-    const apiKey = process.env.PTERO_API_KEY;
+    // ENV dari .env / Vercel
+    const panelUrl = process.env.PTERO_PANEL_URL; // contoh: https://panel.zeroix.com
+    const apiUrl = process.env.PTERO_API_URL;     // contoh: https://panel.zeroix.com
+    const apiKey = process.env.PTERO_API_KEY;     // Application API key
     const eggId = process.env.PTERO_EGG_ID;
     const dockerImage = process.env.PTERO_DOCKER_IMAGE;
     const startupCmd = process.env.PTERO_STARTUP;
-    const defaultAllocationId = process.env.PTERO_DEFAULT_ALLOCATION_ID;
+    const allocationId = process.env.PTERO_DEFAULT_ALLOCATION_ID;
 
-    const defaultDisk = parseInt(process.env.PTERO_DEFAULT_DISK || "10240", 10);
-    const defaultCpu = parseInt(process.env.PTERO_DEFAULT_CPU || "0", 10);
-    const defaultDatabases = parseInt(process.env.PTERO_DEFAULT_DATABASES || "2", 10);
-    const defaultBackups = parseInt(process.env.PTERO_DEFAULT_BACKUPS || "2", 10);
-    const defaultAllocations = parseInt(process.env.PTERO_DEFAULT_ALLOCATIONS || "1", 10);
+    const defaultDisk = parseInt(
+      process.env.PTERO_DEFAULT_DISK || '10240',
+      10
+    );
+    const defaultCpu = parseInt(process.env.PTERO_DEFAULT_CPU || '0', 10);
 
     if (
       !panelUrl ||
@@ -40,100 +62,99 @@ export default async function handler(req, res) {
       !eggId ||
       !dockerImage ||
       !startupCmd ||
-      !defaultAllocationId
+      !allocationId
     ) {
       return res.status(500).json({
-        error: "Konfigurasi panel belum lengkap. Cek Environment Variables di Vercel.",
+        error: 'Konfigurasi Pterodactyl belum lengkap di environment variables.',
       });
     }
 
-    const generatePassword = (length = 12) => {
-      const chars =
-        "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*";
-      let pass = "";
-      for (let i = 0; i < length; i++) {
-        pass += chars.charAt(Math.floor(Math.random() * chars.length));
-      }
-      return pass;
-    };
-
-    const password = generatePassword(12);
-    const safeUsername = panelUsername.replace(/[^a-zA-Z0-9_.-]/g, "_").toLowerCase();
+    // Generate email
     const timestamp = Date.now();
-    const email = `user_${safeUsername}_${timestamp}@zeroix.local`;
+    const email = `${panelUsername}_${timestamp}@zeroix.local`;
 
-    // 1) create user biasa
+    // 1) Buat USER di Pterodactyl
     const userResp = await fetch(`${apiUrl}/api/application/users`, {
-      method: "POST",
+      method: 'POST',
       headers: {
-        "Content-Type": "application/json",
+        'Content-Type': 'application/json',
         Authorization: `Bearer ${apiKey}`,
-        Accept: "application/json",
+        Accept: 'application/json',
       },
       body: JSON.stringify({
-        username: safeUsername,
+        username: panelUsername,
         email,
-        first_name: "Zeroix",
-        last_name: "Member",
-        password,
-        language: "en",
+        first_name: 'Zeroix',
+        last_name: 'Member',
+        password: panelPassword,
+        language: 'en',
         root_admin: false,
       }),
     });
 
     if (!userResp.ok) {
-      const err = await safeJson(userResp);
-      console.error("Error create user:", err);
-      throw new Error(`Gagal membuat user di panel (status ${userResp.status}).`);
+      const errBody = await safeJson(userResp);
+      console.error('Create panel user error:', errBody);
+      return res.status(500).json({
+        error: `Gagal membuat user panel (status ${userResp.status}).`,
+      });
     }
 
     const userData = await userResp.json();
     const user = userData.attributes;
 
-    // 2) create server
-    const memoryLimit = parseInt(ram, 10);
+    // 2) Buat SERVER untuk user ini
+    const memoryLimit = parseInt(panelRam, 10);
 
-    const serverBody = {
-      name: serverName,
-      description: `Server dibuat via Zeroix Dashboard`,
-      user: user.id,
-      egg: parseInt(eggId, 10),
-      docker_image: dockerImage,
-      startup: startupCmd,
-      limits: {
-        memory: memoryLimit,
-        swap: 0,
-        disk: defaultDisk,
-        io: 500,
-        cpu: defaultCpu,
-      },
-      feature_limits: {
-        databases: defaultDatabases,
-        allocations: defaultAllocations,
-        backups: defaultBackups,
-      },
-      allocation: {
-        default: parseInt(defaultAllocationId, 10),
-      },
-      environment: {
-        NODE_ENV: "production",
-      },
-    };
+    const serverName = `${panelUsername}-server`;
 
     const serverResp = await fetch(`${apiUrl}/api/application/servers`, {
-      method: "POST",
+      method: 'POST',
       headers: {
-        "Content-Type": "application/json",
+        'Content-Type': 'application/json',
         Authorization: `Bearer ${apiKey}`,
-        Accept: "application/json",
+        Accept: 'application/json',
       },
-      body: JSON.stringify(serverBody),
+      body: JSON.stringify({
+        name: serverName,
+        description: `Created from Zeroix Dashboard for ${panelUsername}`,
+        user: user.id,
+        egg: parseInt(eggId, 10),
+        docker_image: dockerImage,
+        startup: startupCmd,
+        limits: {
+          memory: memoryLimit,
+          swap: 0,
+          disk: defaultDisk,
+          io: 500,
+          cpu: defaultCpu,
+        },
+        feature_limits: {
+          databases: 2,
+          allocations: 1,
+          backups: 2,
+        },
+        allocation: {
+          default: parseInt(allocationId, 10),
+        },
+        environment: {
+          NODE_ENV: 'production',
+          PANEL_USER: panelUsername,
+        },
+        deploy: {
+          locations: [],
+          dedicated_ip: false,
+          port_range: [],
+        },
+      }),
     });
 
     if (!serverResp.ok) {
-      const err = await safeJson(serverResp);
-      console.error("Error create server:", err);
-      throw new Error(`Gagal membuat server di panel (status ${serverResp.status}).`);
+      const errBody = await safeJson(serverResp);
+      console.error('Create server error:', errBody);
+      return res.status(500).json({
+        error: `User berhasil dibuat, namun gagal membuat server (status ${serverResp.status}).`,
+      });
     }
 
     const serverData = await serverResp.json();
@@ -145,22 +166,16 @@ export default async function handler(req, res) {
         username: user.username,
         email: user.email,
       },
-      password,
+      password: panelPassword,
       server: {
         name: server.name,
         limits: server.limits,
       },
     });
   } catch (err) {
-    console.error("Internal Error (create-panel):", err);
-    return res.status(500).json({ error: err.message || "Terjadi kesalahan di server." });
-  }
-}
-
-async function safeJson(resp) {
-  try {
-    return await resp.json();
-  } catch {
-    return { raw: await resp.text() };
+    console.error('Internal error (createPanel):', err);
+    return res.status(500).json({
+      error: err.message || 'Terjadi kesalahan di server.',
+    });
   }
 }
