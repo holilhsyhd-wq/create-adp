@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Zeroix Panel Creator</title>
 
-    <!-- Fonts & Icons -->
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/style.css">
 </head>
@@ -17,7 +16,6 @@
         <span id="clock">00:00:00</span>
     </div>
 
-    <!-- Glassmorphism Container -->
     <div class="wrapper">
         <h1 class="title">Zeroix Panel Creator</h1>
         <p class="subtitle">Create Pterodactyl Panel & Admin Instantly</p>
@@ -38,13 +36,18 @@
                 <option value="" disabled selected>-- Pilih Ukuran RAM --</option>
                 <option value="1024">1 GB</option>
                 <option value="2048">2 GB</option>
+                <option value="3072">3 GB</option>
                 <option value="4096">4 GB</option>
+                <option value="5120">5 GB</option>
+                <option value="6144">6 GB</option>
+                <option value="7168">7 GB</option>
                 <option value="8192">8 GB</option>
+                <option value="9216">9 GB</option>
                 <option value="0">Unlimited</option>
             </select>
 
             <label>Secret Key</label>
-            <input type="password" name="secretKey" placeholder="Masukkan Secret Key" required>
+            <input type="password" name="secretKey" placeholder="Masukkan Secret Key (panel: barmods21 / admin: barmods22)" required>
 
             <button id="submitBtn">Proses</button>
         </form>
@@ -53,19 +56,17 @@
     </div>
 
     <script>
-        // ================== Clock =====================
+        // Clock
         const clockElem = document.getElementById("clock");
         function updateClock(){
             const now = new Date();
-            const h = String(now.getHours()).padStart(2, "0");
-            const m = String(now.getMinutes()).padStart(2, "0");
-            const s = String(now.getSeconds()).padStart(2, "0");
-            clockElem.textContent = `${h}:${m}:${s}`;
+            clockElem.textContent =
+                now.toLocaleTimeString("en-GB", { hour12:false });
         }
         setInterval(updateClock, 1000);
         updateClock();
 
-        // ================== Form Handler =====================
+        // Submit Handler
         const form = document.getElementById("createForm");
         const resultBox = document.getElementById("resultBox");
         const btn = document.getElementById("submitBtn");
