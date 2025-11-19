@@ -1,69 +1,197 @@
 <!DOCTYPE html>
 <html lang="id">
-<head>
-  <meta charset="UTF-8">
-  <title>Zeroix Dashboard</title>
-  <link rel="stylesheet" href="./public/style.css" />
-</head>
-<body>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Pterodactyl Creator Panel</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
 
-<div class="nav">
-  <h1>Zeroix Dashboard</h1>
-  <span id="clock">00:00:00</span>
-</div>
+    <style>
+      body {
+        margin: 0;
+        font-family: Arial, sans-serif;
+        background: #0f172a;
+        color: #e5e7eb;
+        min-height: 100vh;
+        display: flex;
+        justify-content: center;
+        padding: 40px 15px;
+      }
+      .container {
+        width: 100%;
+        max-width: 700px;
+      }
+      h1 {
+        text-align: center;
+        margin-bottom: 10px;
+      }
+      .subtitle {
+        text-align: center;
+        color: #94a3b8;
+        margin-bottom: 25px;
+      }
+      .card {
+        background: #020617;
+        border: 1px solid #1e293b;
+        border-radius: 12px;
+        padding: 20px;
+        margin-bottom: 20px;
+      }
+      .field {
+        margin-bottom: 15px;
+      }
+      label {
+        display: block;
+        margin-bottom: 6px;
+        color: #94a3b8;
+      }
+      input, select {
+        width: 100%;
+        padding: 10px;
+        background: #0f172a;
+        border: 1px solid #1e293b;
+        color: white;
+        border-radius: 8px;
+      }
+      .radio-group { display: flex; gap: 15px; flex-wrap: wrap; }
+      button {
+        width: 100%;
+        padding: 12px;
+        font-size: 16px;
+        background: #16a34a;
+        border: none;
+        border-radius: 10px;
+        color: white;
+        cursor: pointer;
+      }
+      .error { color: #ef4444; margin-top: 10px; }
+      a { color: #38bdf8; }
+    </style>
+  </head>
 
-<div class="container">
+  <body>
+    <div class="container">
+      <h1>Pterodactyl Creator</h1>
+      <p class="subtitle">Buat Admin Panel atau Panel + Server dalam 1 klik.</p>
 
-  <!-- CREATE PANEL -->
-  <div class="card">
-    <h2>Create Panel</h2>
+      <form id="form" class="card">
+        <div class="field">
+          <label>Nama Akun / Server</label>
+          <input id="serverName" placeholder="contoh: MyBotServer" required />
+        </div>
 
-    <label>Username Panel</label>
-    <input id="usernamePanel" placeholder="username panel" />
+        <div class="field">
+          <label>Pilih Aksi</label>
+          <div class="radio-group">
+            <label><input type="radio" name="actionType" value="panel" checked /> Panel + Server</label>
+            <label><input type="radio" name="actionType" value="admin" /> Admin Panel</label>
+          </div>
+        </div>
 
-    <label>Pilih RAM</label>
-    <select id="ram">
-      <option value="1024">1 GB</option>
-      <option value="2048">2 GB</option>
-      <option value="3072">3 GB</option>
-      <option value="4096">4 GB</option>
-      <option value="5120">5 GB</option>
-      <option value="6144">6 GB</option>
-      <option value="7168">7 GB</option>
-      <option value="8192">8 GB</option>
-      <option value="9216">9 GB</option>
-      <option value="unlimited">Unlimited</option>
-    </select>
+        <div class="field" id="ramField">
+          <label>RAM</label>
+          <select id="ram">
+            <option value="1024">1 GB</option>
+            <option value="2048">2 GB</option>
+            <option value="3072">3 GB</option>
+            <option value="4096">4 GB</option>
+            <option value="5120">5 GB</option>
+            <option value="6144">6 GB</option>
+            <option value="7168">7 GB</option>
+            <option value="8192">8 GB</option>
+            <option value="9216">9 GB</option>
+            <option value="0">Unlimited</option>
+          </select>
+        </div>
 
-    <label>Secret Key Panel</label>
-    <input type="password" id="keyPanel" placeholder="secret panel" />
+        <div class="field">
+          <label>Tipe Panel</label>
+          <div class="radio-group">
+            <label><input type="radio" name="serverType" value="private" checked /> Private</label>
+            <label><input type="radio" name="serverType" value="public" /> Public</label>
+          </div>
+        </div>
 
-    <button onclick="createPanel()">Buat Panel</button>
+        <div class="field">
+          <label>Secret Key</label>
+          <input id="secretKey" placeholder="barmods21 / barmods22" required />
+        </div>
 
-    <div id="resultPanel" class="result"></div>
-  </div>
+        <button id="submitBtn">Proses</button>
+        <p id="error" class="error" style="display:none;"></p>
+      </form>
 
+      <div id="result" class="card" style="display:none;"></div>
+    </div>
 
-  <!-- CREATE ADMIN -->
-  <div class="card">
-    <h2>Create Admin</h2>
+    <script>
+      const form = document.getElementById("form");
+      const errorMsg = document.getElementById("error");
+      const result = document.getElementById("result");
+      const ramField = document.getElementById("ramField");
 
-    <label>Username Admin</label>
-    <input id="usernameAdmin" placeholder="username admin" />
+      // Hide/show RAM field if admin selected
+      form.addEventListener("change", () => {
+        const action = document.querySelector("input[name='actionType']:checked").value;
+        ramField.style.display = action === "admin" ? "none" : "block";
+      });
 
-    <label>Password Admin</label>
-    <input type="password" id="passwordAdmin" placeholder="password admin" />
+      form.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        errorMsg.style.display = "none";
+        result.style.display = "none";
 
-    <label>Secret Key Admin</label>
-    <input type="password" id="keyAdmin" placeholder="secret admin" />
+        const serverName = document.getElementById("serverName").value;
+        const ram = document.getElementById("ram").value;
+        const secretKey = document.getElementById("secretKey").value;
+        const serverType = document.querySelector("input[name='serverType']:checked").value;
+        const actionType = document.querySelector("input[name='actionType']:checked").value;
 
-    <button onclick="createAdmin()">Buat Admin</button>
+        const res = await fetch("/api/create-server", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ serverName, ram, secretKey, serverType, actionType }),
+        });
 
-    <div id="resultAdmin" class="result"></div>
-  </div>
+        const data = await res.json();
 
-</div>
+        if (!data.success) {
+          errorMsg.style.display = "block";
+          errorMsg.textContent = data.error;
+          return;
+        }
 
-<script src="./public/script.js"></script>
-</body>
+        if (data.mode === "admin") {
+          result.innerHTML = `
+            <h2>Admin Berhasil Dibuat 🎉</h2>
+            <p>Panel: <a href="${data.panelURL}" target="_blank">${data.panelURL}</a></p>
+            <h3>Akun Admin</h3>
+            <ul>
+              <li><b>Username:</b> ${data.user.username}</li>
+              <li><b>Email:</b> ${data.user.email}</li>
+              <li><b>Password:</b> ${data.password}</li>
+            </ul>
+          `;
+        } else {
+          result.innerHTML = `
+            <h2>Panel + Server Berhasil Dibuat 🎉</h2>
+            <p>Panel: <a href="${data.panelURL}" target="_blank">${data.panelURL}</a></p>
+            <h3>Akun Panel</h3>
+            <ul>
+              <li><b>Username:</b> ${data.user.username}</li>
+              <li><b>Email:</b> ${data.user.email}</li>
+              <li><b>Password:</b> ${data.password}</li>
+            </ul>
+            <h3>Server</h3>
+            <ul>
+              <li><b>ID:</b> ${data.server.id}</li>
+              <li><b>UUID:</b> ${data.server.uuid}</li>
+              <li><b>Nama:</b> ${data.server.name}</li>
+            </ul>
+          `;
+        }
+
+        result.style.display = "block";
+      });
+    </script>
+  </body>
 </html>
