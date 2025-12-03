@@ -1,0 +1,10 @@
+{
+  "name": "server-create",
+  "version": "1.0.0",
+  "scripts": {
+    "vercel-dev": "vercel dev"
+  },
+  "dependencies": {
+    "axios": "^1.6.8"
+  }
+}
