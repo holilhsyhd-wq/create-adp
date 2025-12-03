@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <title>Create Panel Pterodactyl</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: radial-gradient(circle at top, #1d4ed8 0, #020617 55%);
+      color: #e5e7eb;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 16px;
+    }
+    .card {
+      width: 100%;
+      max-width: 420px;
+      padding: 20px 18px 22px;
+      background: rgba(15, 23, 42, 0.96);
+      border-radius: 18px;
+      border: 1px solid #1f2937;
+      box-shadow: 0 18px 45px rgba(0, 0, 0, .6);
+    }
+    .badge {
+      display: inline-block;
+      padding: 3px 7px;
+      border-radius: 999px;
+      font-size: 11px;
+      background: rgba(37, 99, 235, .18);
+      border: 1px solid rgba(37, 99, 235, .5);
+      color: #bfdbfe;
+    }
+    h1 {
+      font-size: 22px;
+      margin: 4px 0 2px;
+      text-align: center;
+      font-weight: 700;
+    }
+    .subtitle {
+      font-size: 12px;
+      color: #9ca3af;
+      text-align: center;
+      margin-bottom: 16px;
+    }
+    label {
+      font-size: 12px;
+      margin-bottom: 4px;
+      display: block;
+    }
+    input, select {
+      width: 100%;
+      padding: 9px 10px;
+      border-radius: 8px;
+      border: 1px solid #1f2937;
+      background: #020617;
+      color: #e5e7eb;
+      font-size: 13px;
+      margin-bottom: 10px;
+      outline: none;
+    }
+    button {
+      width: 100%;
+      padding: 10px;
+      border-radius: 10px;
+      border: none;
+      background: linear-gradient(135deg, #2563eb, #06b6d4);
+      color: white;
+      font-weight: 600;
+      font-size: 14px;
+      cursor: pointer;
+    }
+    button:disabled {
+      opacity: .7;
+      cursor: not-allowed;
+    }
+    .hint {
+      font-size: 11px;
+      color: #9ca3af;
+      margin-top: 2px;
+      margin-bottom: 8px;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div style="text-align:center;margin-bottom:6px;">
+      <span class="badge">Barmods • Pterodactyl Panel</span>
+    </div>
+    <h1>Create Panel Pterodactyl</h1>
+    <p class="subtitle">
+      Isi data di bawah, pilih RAM & tipe akun (User / Admin).<br>
+      Sistem akan otomatis membuat user & server di panel dan menyimpan datanya.
+    </p>
+
+    <label>Nama Server</label>
+    <input id="serverName" placeholder="Contoh: Barmods Node">
+
+    <label>RAM</label>
+    <select id="ram">
+      <option>1GB</option><option>2GB</option><option>3GB</option>
+      <option>4GB</option><option>5GB</option><option>6GB</option>
+      <option>7GB</option><option>8GB</option><option>9GB</option>
+      <option>UNLIMITED</option>
+    </select>
+
+    <label>Tipe Akun Panel</label>
+    <select id="accountType">
+      <option value="user">User Panel</option>
+      <option value="admin">Admin Panel</option>
+    </select>
+    <div class="hint">
+      Secret: <code>barmods21</code> untuk User Panel, <code>barmods22</code> untuk Admin Panel.
+    </div>
+
+    <label>Username Panel</label>
+    <input id="username" placeholder="Username login panel">
+
+    <label>Password Panel</label>
+    <input id="password" type="password" placeholder="Password login panel">
+    <div class="hint">
+      Gunakan password khusus untuk panel, jangan pakai password penting.
+    </div>
+
+    <label>Secret Key</label>
+    <input id="secretKey" type="password" placeholder="Masukkan secret key untuk tipe akun ini">
+    <div class="hint">
+      User Panel: <code>barmods21</code> • Admin Panel: <code>barmods22</code>
+    </div>
+
+    <button id="btn" onclick="sendCreate()">Create Panel</button>
+  </div>
+
+<!-- FIREBASE + LOGIC -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
+  import {
+    getFirestore,
+    collection,
+    addDoc,
+    serverTimestamp
+  } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
+
+  // Firebase config dari kamu
+  const firebaseConfig = {
+    apiKey: "AIzaSyBpsfDmupS9wq-iNge5aYvknmw5bSryd3A",
+    authDomain: "toko-barmods.firebaseapp.com",
+    projectId: "toko-barmods",
+    storageBucket: "toko-barmods.firebasestorage.app",
+    messagingSenderId: "284047189012",
+    appId: "1:284047189012:web:6ef0c6891adab08a383301"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db  = getFirestore(app);
+
+  window.sendCreate = async function() {
+    const serverName  = document.getElementById("serverName").value.trim();
+    const ram         = document.getElementById("ram").value;
+    const username    = document.getElementById("username").value.trim();
+    const password    = document.getElementById("password").value.trim();
+    const accountType = document.getElementById("accountType").value;
+    const secretKey   = document.getElementById("secretKey").value.trim();
+    const btn         = document.getElementById("btn");
+
+    if (!serverName || !username || !password || !secretKey) {
+      return alert("Nama server, username, password dan secret key wajib diisi!");
+    }
+
+    btn.disabled = true;
+    btn.textContent = "Memproses...";
+
+    try {
+      // 1) Panggil API untuk create di Pterodactyl
+      const res = await fetch("/api/create", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ serverName, ram, username, password, accountType, secretKey })
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        alert(data.message || "Gagal membuat panel.");
+      } else {
+        alert(data.message || "Berhasil.");
+
+        // 2) Simpan ke Firestore (koleksi 'ptero_panels')
+        await addDoc(collection(db, "ptero_panels"), {
+          serverName,
+          ram,
+          username,
+          password,
+          accountType,
+          secretKeyUsed: secretKey,
+          createdAt: serverTimestamp()
+        });
+      }
+    } catch (e) {
+      console.error(e);
+      alert("Terjadi error saat membuat panel.");
+    } finally {
+      btn.disabled = false;
+      btn.textContent = "Create Panel";
+    }
+  }
+</script>
+</body>
+</html>
