@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <title>Admin Data Panel Pterodactyl</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+      background: radial-gradient(circle at top,#22c55e 0,#020617 55%);
+      color:#e5e7eb;
+      min-height:100vh;
+      padding:16px;
+      display:flex;
+      justify-content:center;
+      align-items:center;
+    }
+    .card {
+      width:100%;
+      max-width:900px;
+      background:rgba(15,23,42,.97);
+      border-radius:18px;
+      border:1px solid #1f2937;
+      padding:16px;
+      box-shadow:0 18px 45px rgba(0,0,0,.6);
+    }
+    .badge{
+      display:inline-block;
+      padding:3px 7px;
+      border-radius:999px;
+      font-size:11px;
+      background:rgba(34,197,94,.18);
+      border:1px solid rgba(34,197,94,.5);
+      color:#bbf7d0;
+    }
+    h1{font-size:22px;margin:4px 0 2px;}
+    .subtitle{font-size:12px;color:#9ca3af;margin-bottom:12px;}
+    input{
+      width:100%;
+      padding:9px 10px;
+      border-radius:9px;
+      border:1px solid #1f2937;
+      background:#020617;
+      color:#e5e7eb;
+      font-size:13px;
+      outline:none;
+    }
+    button{
+      border-radius:10px;
+      border:none;
+      cursor:pointer;
+      font-size:13px;
+      font-weight:600;
+      padding:9px 12px;
+    }
+    .btn-primary{
+      width:100%;
+      margin-top:8px;
+      background:linear-gradient(135deg,#22c55e,#16a34a);
+      color:white;
+    }
+    .btn-refresh{
+      background:#020617;
+      color:#e5e7eb;
+      border:1px solid #111827;
+    }
+    .login-box{
+      max-width:360px;
+      width:100%;
+      background:rgba(15,23,42,.97);
+      border-radius:18px;
+      border:1px solid #1f2937;
+      padding:18px 16px 20px;
+      box-shadow:0 18px 45px rgba(0,0,0,.7);
+    }
+    .list{
+      margin-top:10px;
+      display:grid;
+      grid-template-columns:1fr;
+      gap:8px;
+    }
+    @media(min-width:720px){
+      .list{grid-template-columns:1fr 1fr;}
+    }
+    .item{
+      background:#020617;
+      border-radius:14px;
+      border:1px solid #111827;
+      padding:10px;
+      font-size:12px;
+    }
+    .row-top{
+      display:flex;
+      justify-content:space-between;
+      gap:6px;
+      margin-bottom:4px;
+    }
+    .server-name{font-weight:600;}
+    .tag{
+      padding:2px 6px;
+      border-radius:999px;
+      font-size:10px;
+      text-transform:uppercase;
+    }
+    .tag-user{background:rgba(59,130,246,.12);color:#93c5fd;}
+    .tag-admin{background:rgba(234,179,8,.12);color:#facc15;}
+    .mono{font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,"Liberation Mono","Courier New",monospace;}
+    .info{font-size:11px;color:#9ca3af;margin-top:6px;}
+  </style>
+</head>
+<body>
+  <!-- VIEW LOGIN -->
+  <div id="loginView" class="login-box">
+    <div style="text-align:center;margin-bottom:6px;">
+      <span class="badge">Admin • Barmods Panel</span>
+    </div>
+    <h2 style="font-size:18px;margin:4px 0 2px;text-align:center;">Admin Data Panel</h2>
+    <p class="subtitle" style="text-align:center;">
+      Masukkan secret key admin untuk melihat semua username & password panel yang tersimpan.
+    </p>
+    <input id="adminSecret" type="password" placeholder="Secret admin (barmods22)">
+    <button class="btn-primary" id="btnLogin">Masuk</button>
+    <p class="info">Gunakan hanya oleh kamu, jaga kerahasiaan data user.</p>
+  </div>
+
+  <!-- VIEW ADMIN -->
+  <div id="adminView" style="display:none;">
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;">
+        <div>
+          <span class="badge">Barmods • Firestore</span>
+          <h1>Data Panel Pterodactyl</h1>
+          <p class="subtitle">
+            Daftar semua request create panel yang tersimpan di Firestore (username, password, RAM, tipe akun).
+          </p>
+        </div>
+        <button class="btn-refresh" id="btnRefresh">Refresh</button>
+      </div>
+
+      <div class="info" id="infoText">Memuat data...</div>
+      <div class="list" id="list"></div>
+    </div>
+  </div>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
+  import {
+    getFirestore,
+    collection,
+    getDocs,
+    query,
+    orderBy
+  } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyBpsfDmupS9wq-iNge5aYvknmw5bSryd3A",
+    authDomain: "toko-barmods.firebaseapp.com",
+    projectId: "toko-barmods",
+    storageBucket: "toko-barmods.firebasestorage.app",
+    messagingSenderId: "284047189012",
+    appId: "1:284047189012:web:6ef0c6891adab08a383301"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db  = getFirestore(app);
+
+  const ADMIN_SECRET = "barmods22";
+
+  const loginView = document.getElementById("loginView");
+  const adminView = document.getElementById("adminView");
+  const adminSecretInput = document.getElementById("adminSecret");
+  const btnLogin = document.getElementById("btnLogin");
+  const btnRefresh = document.getElementById("btnRefresh");
+  const listEl = document.getElementById("list");
+  const infoText = document.getElementById("infoText");
+
+  btnLogin.addEventListener("click", () => {
+    const val = adminSecretInput.value.trim();
+    if (val === ADMIN_SECRET) {
+      loginView.style.display = "none";
+      adminView.style.display = "flex";
+      loadData();
+    } else {
+      alert("Secret admin salah.");
+    }
+  });
+
+  btnRefresh.addEventListener("click", () => loadData());
+
+  async function loadData() {
+    infoText.textContent = "Memuat data...";
+    listEl.innerHTML = "";
+
+    try {
+      const q = query(collection(db, "ptero_panels"), orderBy("createdAt", "desc"));
+      const snap = await getDocs(q);
+
+      if (snap.empty) {
+        infoText.textContent = "Belum ada data panel yang tersimpan.";
+        return;
+      }
+
+      infoText.textContent = "";
+      snap.forEach(doc => {
+        const d = doc.data();
+        const div = document.createElement("div");
+        div.className = "item";
+
+        const createdAt = d.createdAt?.toDate ? d.createdAt.toDate().toLocaleString("id-ID") : "-";
+        const tagClass = d.accountType === "admin" ? "tag-admin" : "tag-user";
+        const tagLabel = d.accountType === "admin" ? "ADMIN PANEL" : "USER PANEL";
+
+        div.innerHTML = `
+          <div class="row-top">
+            <div>
+              <div class="server-name">${d.serverName || "-"}</div>
+              <div style="font-size:11px;color:#9ca3af;">RAM: ${d.ram || "-"}</div>
+            </div>
+            <span class="tag ${tagClass}">${tagLabel}</span>
+          </div>
+          <div style="font-size:11px;">
+            <div>Username: <span class="mono">${d.username || "-"}</span></div>
+            <div>Password: <span class="mono">${d.password || "-"}</span></div>
+          </div>
+          <div class="info" style="margin-top:4px;">
+            Dibuat: ${createdAt}
+          </div>
+        `;
+        listEl.appendChild(div);
+      });
+    } catch (e) {
+      console.error(e);
+      infoText.textContent = "Gagal memuat data Firestore.";
+    }
+  }
+</script>
+</body>
+</html>
